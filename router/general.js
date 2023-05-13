@@ -137,11 +137,12 @@ public_users.get('/title/:title', async function (req, res) {
     }
 })
 
-// Переделать get Book Review
 //  Get book review
-public_users.get('/review/:isbn',function (req, res) {
+public_users.get('/review/:isbn', async function (req, res) {
   const isbn = req.params.isbn
-  res.send(books[isbn]["reviews"])
-});
+  const collection = client.db("booksdb").collection("booksdb")
+  const book = await collection.findOne({isbn: isbn}, {reviews: 1, _id: 0})
+  res.send(book.reviews)
+})
 
-module.exports.general = public_users;
+module.exports.general = public_users
