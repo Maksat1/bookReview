@@ -138,11 +138,35 @@ public_users.get('/title/:title', async function (req, res) {
 })
 
 //  Get book review
+const getReviews = async (isbn) => {
+    try {
+        await client.connect()
+        const collection = client.db("booksdb").collection("booksdb")
+        const book = await collection.findOne({isbn: isbn}, {reviews: 1, _id: 0})
+        if (Object.keys(book.reviews).length === 0) {
+            throw new Error('We have no reviews for the book you requested')
+            // В консоли выводится `Error: We have no reviews for the book you requested`
+            // at getReviews (D:\projects\bookReview\bookReview\router\general.js:147:19))
+            // at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+            // at async D:\projects\bookReview\bookReview\router\general.js:160:28
+            // В браузере ничего не выводится
+        } else {
+            return book.reviews
+        }
+    } catch (err) {
+        console.log(err)
+    } finally {
+        await client.close()
+    }
+}
+
 public_users.get('/review/:isbn', async function (req, res) {
-  const isbn = req.params.isbn
-  const collection = client.db("booksdb").collection("booksdb")
-  const book = await collection.findOne({isbn: isbn}, {reviews: 1, _id: 0})
-  res.send(book.reviews)
+    try {
+        const bookReview = await getReviews(req.params.isbn)
+        res.send(bookReview)
+    } catch (err) {
+        res.send(err.message)
+    } 
 })
 
 module.exports.general = public_users
