@@ -10,12 +10,13 @@ let checkPassword = require("./auth_users.js").checkPassword
 let users = require("./auth_users.js").users
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.wpvcli3.mongodb.net/?retryWrites=true&w=majority`
 const public_users = express.Router()
+const authenticated = require("./auth_users.js").authenticated //added 17.05.23
 
 // Create a new MongoClient
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 
 // register user
-public_users.post("/register", (req,res) => {
+public_users.post("/register", (req,res) => { //url localhost:5000/register
   const username = req.body.username
   const password = req.body.password
   
@@ -23,6 +24,7 @@ public_users.post("/register", (req,res) => {
       if(!isValid(username)) {
         if (checkPassword(password)) {
           users.push({"username":username, "password":password})
+          console.log('users', users)
           return res.status(200).json({message: "User successfully registered"})
         } else {
           res.send('Пароль должен быть длиннее 6 символов, содержать заглавные и строчные буквы, а также специальные символы')
@@ -169,4 +171,5 @@ public_users.get('/review/:isbn', async function (req, res) {
     } 
 })
 
+public_users.use(authenticated) //use the authenticated router for protected routes. added 17.05.23 
 module.exports.general = public_users

@@ -1,6 +1,5 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-// let books = require("./booksdb.js");
 const regd_users = express.Router();
 
 let users = [];
@@ -50,7 +49,7 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 }
 
 //only registered users can login
-regd_users.post("/login", (req,res) => {
+regd_users.post("/login", (req,res) => { //url localhost:5000/login
   const username = req.body.username;
   const password = req.body.password;
 
@@ -62,7 +61,9 @@ regd_users.post("/login", (req,res) => {
     let accessToken = jwt.sign({
       data: password
     }, 'access', { expiresIn: 60 * 60 });
-    //console.log(accessToken)
+    
+    // Create a session object if it doesn't exist
+    req.session = req.session || {} //17.05
     req.session.authorization = {
       accessToken, username
     }
@@ -85,6 +86,7 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   
   res.json({ message: "Review added successfully" })
 })
+
 // delete review of the logged in user
 regd_users.delete("/auth/review/:isbn", (req,res) => {
   const isbn = req.params.isbn
