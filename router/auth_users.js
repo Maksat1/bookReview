@@ -4,7 +4,7 @@ const express = require('express')
 const jwt = require('jsonwebtoken')
 const regd_users = express.Router()
 const MongoClient = require('mongodb').MongoClient
-const uri2 = `mongodb+srv://${process.env.DB2_USERNAM}E:${process.env.DB2_PASSWORD}@cluster0.3eskrin.mongodb.net/?retryWrites=true&w=majority`
+const uri2 = `mongodb+srv://${process.env.DB2_USERNAME}:${process.env.DB2_PASSWORD}@cluster0.3eskrin.mongodb.net/?retryWrites=true&w=majority`
 const client2 = new MongoClient(uri2, { useNewUrlParser: true, useUnifiedTopology: true })
 
 // База данных где хранятся данные пользователей
