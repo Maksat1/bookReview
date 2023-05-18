@@ -1,9 +1,18 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const regd_users = express.Router();
+const dotenv = require("dotenv")
+dotenv.config()
+const express = require('express')
+const jwt = require('jsonwebtoken')
+const regd_users = express.Router()
+const MongoClient = require('mongodb').MongoClient
+const uri2 = `mongodb+srv://${process.env.DB2_USERNAM}E:${process.env.DB2_PASSWORD}@cluster0.3eskrin.mongodb.net/?retryWrites=true&w=majority`
+const client2 = new MongoClient(uri2, { useNewUrlParser: true, useUnifiedTopology: true })
 
-let users = [];
+// База данных где хранятся данные пользователей
+const dbName = 'usersdb'
+const db2 = client2.db(dbName)
+const users = db2.collection('users')
 
+// Проверка пароля: больше 6 символов, цифры, прописные и строчные, спецсимволы
 const checkPassword = (password) => {
   let pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$#%&@]).{6,}$/
   if (password.length && pattern.test(password)) {
@@ -22,17 +31,14 @@ let isNotEmpty = (username) => {
     return false
   }
 }
-
-const isValid = (username)=>{
-  //check if username is already registered
-  let usersWithSameName = users.filter((user)=>{ //creates array with registered users
-    return user.username === username //return boolean
-  })
-   
-  if(usersWithSameName.length > 0){
-    return true;
-  } else {
-    return false; 
+// Проверка было ли имя пользователя зарегистрировано ранее
+const isValid = async (username) => {
+  try {
+    const user = await users.findOne({ username: username })
+    return !!user
+  } catch (error) {
+    console.error(error)
+    return true
   }
 }
 
@@ -98,8 +104,6 @@ regd_users.delete("/auth/review/:isbn", (req,res) => {
     res.send(books[isbn].reviews)
   }
 })
-
-
 
 module.exports.authenticated = regd_users
 module.exports.isValid = isValid

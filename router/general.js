@@ -1,8 +1,6 @@
 const dotenv = require("dotenv")
 dotenv.config()
 const express = require('express')
-// const axios = require('axios')
-// const fs = require('fs')
 const MongoClient = require('mongodb').MongoClient
 let isValid = require("./auth_users.js").isValid
 let isNotEmpty = require("./auth_users.js").isNotEmpty
@@ -15,24 +13,25 @@ const authenticated = require("./auth_users.js").authenticated //added 17.05.23
 // Create a new MongoClient
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 
-// register user
-public_users.post("/register", (req,res) => { //url localhost:5000/register
-  const username = req.body.username
-  const password = req.body.password
-  
-  if (username && password && isNotEmpty(username)) {
-      if(!isValid(username)) {
+// register user localhost:5000/register
+public_users.post("/register", async (req,res) => {
+    const username = req.body.username
+    const password = req.body.password
+
+    if (username && password && isNotEmpty(username)) {
+      if (!(await isValid(username))) {
         if (checkPassword(password)) {
-          users.push({"username":username, "password":password})
-          console.log('users', users)
-          return res.status(200).json({message: "User successfully registered"})
+            const newUser = { username, password }
+            users.insertOne(newUser)
+            return res.status(200).json({message: "User successfully registered"})
         } else {
           res.send('Пароль должен быть длиннее 6 символов, содержать заглавные и строчные буквы, а также специальные символы')
         }
       } else {
         return res.status(400).json({message: "User already exists"})
       }
-  } else {
+  } 
+  else {
     return res.send('No username or password')
   }
 })
@@ -71,7 +70,7 @@ const getBookByISBN = async (isbn) => {
         //Нужна ли проверка на пустой isbn? Например: localhost:5000/isbn/
         console.log(err)
     } finally {
-        await client.close() // Close the connection when finished
+        await client.close() // Closes the connection when finished
     }
 }
 
