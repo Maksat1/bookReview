@@ -2,6 +2,7 @@ const dotenv = require("dotenv")
 dotenv.config()
 const express = require('express')
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 const regd_users = express.Router()
 const MongoClient = require('mongodb').MongoClient
 const uri2 = `mongodb+srv://${process.env.DB2_USERNAME}:${process.env.DB2_PASSWORD}@cluster0.3eskrin.mongodb.net/?retryWrites=true&w=majority`
@@ -42,20 +43,33 @@ const isValid = async (username) => {
   }
 }
 
-const authenticatedUser = (username,password)=>{ //returns boolean
+const authenticatedUser = async (username,password)=>{ //returns boolean
 //write code to check if username and password match the one we have in records.
-  let validusers = users.filter((user)=>{
-    return (user.username === username && user.password === password)
-  })
-  if(validusers.length > 0){
-    return true;
-  } else {
+try {
+  const user = await users.findOne({ username: username });
+  if (user) {
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+      return isPasswordMatch;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error(error);
     return false;
-  } 
+  }
 }
+  // let validusers = users.findOne((user)=>{
+  //   return (user.username === username && user.password === password)
+  // })
+  // if(validusers.length > 0){
+  //   return true;
+  // } else {
+  //   return false;
+  // } 
+// }
 
 //only registered users can login
-regd_users.post("/login", (req,res) => { //url localhost:5000/login
+regd_users.post("/login", async (req,res) => { //url localhost:5000/login
   const username = req.body.username;
   const password = req.body.password;
 
@@ -63,21 +77,23 @@ regd_users.post("/login", (req,res) => { //url localhost:5000/login
       return res.status(404).json({message: "Error logging in"});
   }
 
-  if (authenticatedUser(username,password)) {
+  if (await authenticatedUser(username,password)) {
     let accessToken = jwt.sign({
       data: password
-    }, 'access', { expiresIn: 60 * 60 });
+    }, 'access', 
+    { expiresIn: 60 * 60 });
     
     // Create a session object if it doesn't exist
     req.session = req.session || {} //17.05
     req.session.authorization = {
-      accessToken, username
+      accessToken, 
+      username
     }
     return res.status(200).send("User successfully logged in");
   } else {
     return res.status(208).json({message: "Invalid Login. Check username and password"});
   }
-});
+})
 
 // Add a book review, only registered users can add reviews
 regd_users.put("/auth/review/:isbn", (req, res) => {
