@@ -9,11 +9,9 @@ let users = require("./auth_users.js").users
 const bcrypt = require('bcrypt')
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.wpvcli3.mongodb.net/?retryWrites=true&w=majority`
 const public_users = express.Router()
-const authenticated = require("./auth_users.js").authenticated //added 17.05.23
 
 // Create a new MongoClient
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-
 
 // register user localhost:5000/register
 public_users.post("/register", async (req,res) => {
@@ -177,5 +175,4 @@ public_users.get('/review/:isbn', async function (req, res) {
     } 
 })
 
-public_users.use(authenticated) //use the authenticated router for protected routes. added 17.05.23 
 module.exports.general = public_users

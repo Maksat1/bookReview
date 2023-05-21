@@ -5,17 +5,14 @@ const jwt = require('jsonwebtoken')
 const session = require('express-session')
 const customer_routes = require('./router/auth_users.js').authenticated
 const genl_routes = require('./router/general.js').general
-const authUser = require('./router/auth_users.js')
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.wpvcli3.mongodb.net/?retryWrites=true&w=majority`
-const mongoose = require('mongoose')
-const MongoClient = require('mongodb').MongoClient
 
 const app = express()
 
 app.use(express.json())
-// app.use('/auth', regd_users)
 app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUninitialized: true}))
 
+// what it does?
 app.use("/customer/auth/*", function auth(req,res,next){
     if(req.session.authorization) {
         token = req.session.authorization['accessToken']
@@ -32,8 +29,6 @@ app.use("/customer/auth/*", function auth(req,res,next){
         return res.status(403).json({message: "User not logged in"})
     }
 })
-
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 
 const PORT =5000
 
