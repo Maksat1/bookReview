@@ -11,7 +11,10 @@ const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}
 const public_users = express.Router()
 
 // Create a new MongoClient
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+const client = new MongoClient(uri, { 
+    useNewUrlParser: true, 
+    useUnifiedTopology: true 
+})
 
 // register user localhost:5000/register
 public_users.post("/register", async (req,res) => {
@@ -55,7 +58,7 @@ const getAllBooks = async () => {
     }
 }
 
-public_users.get('/', async (req, res) => {
+public_users.get('/books', async (req, res) => {
     const data =  await getAllBooks()
     res.json(data) 
 })
